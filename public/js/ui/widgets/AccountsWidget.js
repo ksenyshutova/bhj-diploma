@@ -13,8 +13,14 @@ class AccountsWidget {
    * Если переданный элемент не существует,
    * необходимо выкинуть ошибку.
    * */
-  constructor( element ) {
+  constructor(element) {
+    this.element = element;
+    this.registerEvents();
+    this.update();
 
+    if (this.element === undefined) {
+      alert('Пожалуйста, повторите попытку');
+    }
   }
 
   /**
@@ -25,7 +31,14 @@ class AccountsWidget {
    * вызывает AccountsWidget.onSelectAccount()
    * */
   registerEvents() {
-
+    const createAccount = document.querySelector('.create-account');
+    createAccount.addEventListener('click', event => {
+      event.preventDefault();
+      App.getModal('createAccount').open();
+      if (event.target) {
+        AccountsWidget.onSelectAccount();
+      }
+    });
   }
 
   /**
@@ -39,8 +52,19 @@ class AccountsWidget {
    * метода renderItem()
    * */
   update() {
-
+    const authorizedUser = User.current();
+    if (authorizedUser !== null) {
+    Account.list(authorizedUser, (err, response) => {
+      if (err) {
+        alert('передан не верный Account.list');
+      };
+      this.clear();
+      response.data.forEach(el => {
+        this.renderItem(el);
+      });
+    });
   }
+}
 
   /**
    * Очищает список ранее отображённых счетов.
@@ -48,7 +72,10 @@ class AccountsWidget {
    * в боковой колонке
    * */
   clear() {
-
+    const list = Array.from(document.querySelectorAll('.account'));
+    list.forEach(el => {
+      el.remove();
+    });
   }
 
   /**
@@ -58,8 +85,9 @@ class AccountsWidget {
    * счёта класс .active.
    * Вызывает App.showPage( 'transactions', { account_id: id_счёта });
    * */
-  onSelectAccount( element ) {
-
+  onSelectAccount(element) {
+    element.classList.toggle('active');
+    App.showPage('transactions', { account_id: element.dataset.id });
   }
 
   /**
@@ -67,8 +95,13 @@ class AccountsWidget {
    * отображения в боковой колонке.
    * item - объект с данными о счёте
    * */
-  getAccountHTML(item){
-
+  getAccountHTML(item) {
+    return `<li class="active account" data-id=${item.id}>
+    <a href="#">
+        <span>${item.name}</span> /
+        <span>${item.sum} ₽</span>
+    </a>
+</li>`
   }
 
   /**
@@ -77,7 +110,8 @@ class AccountsWidget {
    * AccountsWidget.getAccountHTML HTML-код элемента
    * и добавляет его внутрь элемента виджета
    * */
-  renderItem(data){
-
+  renderItem(data) {
+    let item = this.getAccountHTML(data);
+    this.element.insertAdjacentHTML('beforeEnd', item);
   }
 }

@@ -1,3 +1,5 @@
+
+
 /**
  * Класс Sidebar отвечает за работу боковой колонки:
  * кнопки скрытия/показа колонки в мобильной версии сайта
@@ -18,7 +20,14 @@ class Sidebar {
    * при нажатии на кнопку .sidebar-toggle
    * */
   static initToggleButton() {
+    const sidebarMini = document.querySelector('.sidebar-mini');
+    const sidebarToggle = document.querySelector('.sidebar-toggle')
 
+    sidebarToggle.addEventListener('click', event => {
+      event.preventDefault();
+      sidebarMini.classList.toggle('sidebar-open');
+      sidebarMini.classList.toggle('sidebar-collapse');
+    });
   }
 
   /**
@@ -29,6 +38,31 @@ class Sidebar {
    * выходу устанавливает App.setState( 'init' )
    * */
   static initAuthLinks() {
+    const itemRegister = document.querySelector('.menu-item_register'); // Регистрация 
+    const itemLogin = document.querySelector('.menu-item_login'); // Войти 
+    const itemLogout = document.querySelector('.menu-item_logout'); // Выйти  
 
+    itemRegister.addEventListener('click', event => {
+      event.preventDefault();
+      let classes = itemRegister.className.split(' '); 
+      let correctClass = classes.find(el => el.includes('menu-item_')).substring(10);
+      App.getModal(correctClass).open();
+    });
+
+    itemLogin.addEventListener('click', event => {
+      event.preventDefault();
+      let classes = itemLogin.className.split(' '); 
+      let correctClass = classes.find(el => el.includes('menu-item_')).substring(10);
+      App.getModal(correctClass).open();
+    });
+    
+    itemLogout.addEventListener('click', event => {
+      event.preventDefault();
+      User.logout((response) => {
+        if(response.success === true) {
+          App.setState('init');
+        };
+      });
+    });
   }
 }
